@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>김승환 · SCM</title>
+<meta name="robots" content="noindex, nofollow, noarchive, noimageindex">
+<meta name="description" content="현장에서 시스템까지, 재고가 흐르는 길을 설계합니다. 물류·SCM 김승환">
+<!-- 링크 공유 미리보기 -->
+<meta property="og:url" content="https://boxmover-bot.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="김승환 · SCM">
+<meta property="og:description" content="창고 바닥에서 시작해, 재고가 흐르는 길을 시스템으로 설계합니다. 물류·SCM 6년 · 크로스보더 물류 · ERP/OMS/WMS">
+<meta property="og:image" content="https://boxmover-bot.github.io/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --bg: #050806;
+    --panel: rgba(14, 18, 16, .9);
+    --card: rgba(24, 28, 26, .85);
+    --line: rgba(255, 255, 255, .09);
+    --line-strong: rgba(255, 255, 255, .18);
+    --text: #e4e9e6;
+    --sub: #b4bdb8;
+    --muted: #7d8883;
+    /* 포인트 컬러: 4색만 사용 */
+    --green: #3ddc84;
+    --cyan: #5cc8e8;
+    --purple: #b493f5;
+    --amber: #f5b85c;
+    --ac: var(--green);
+    --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.75 var(--sans); overflow-x: hidden; word-break: keep-all; }
+  #rain { position: fixed; inset: 0; z-index: 0; opacity: .22; }
+  .vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.7) 100%); }
+  main { position: relative; z-index: 3; max-width: 1240px; margin: 0 auto; padding: 0 24px 96px; }
+
+  #boot { position: fixed; inset: 0; z-index: 10; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 16px; transition: opacity .5s; }
+  #boot pre { font: 14px/1.9 var(--mono); color: var(--green); white-space: pre-wrap; max-width: 560px; width: 100%; }
+  #boot.done { opacity: 0; pointer-events: none; }
+
+  nav { position: sticky; top: 0; z-index: 4; background: rgba(5, 8, 6, .85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  nav .in { max-width: 1240px; margin: 0 auto; padding: 15px 24px; display: flex; align-items: center; gap: 8px 31px; flex-wrap: wrap; font: 15.4px var(--mono); }
+  nav .logo { color: var(--green); font-weight: 700; margin-right: auto; text-decoration: none; }
+  nav a { color: var(--sub); text-decoration: none; }
+  nav a span { color: var(--amber); margin-right: 4px; }
+  nav a:hover, nav a:focus-visible { color: #fff; }
+
+  section { scroll-margin-top: 70px; }
+  .term { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin-top: 64px; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+  .term-bar { display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-bottom: 1px solid var(--line); font: 12px var(--mono); color: var(--muted); }
+  .term-bar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .term-bar i:nth-child(1) { background: #ff5f56; }
+  .term-bar i:nth-child(2) { background: #ffbd2e; }
+  .term-bar i:nth-child(3) { background: #27c93f; }
+  .term-bar span { margin-left: 8px; }
+  .term-body { padding: clamp(24px, 4vw, 44px); }
+
+  .prompt { font: 14px var(--mono); color: var(--green); margin-bottom: 16px; }
+  .prompt b { color: var(--muted); font-weight: 400; }
+  .cursor { display: inline-block; width: .55em; height: 1.1em; background: var(--green); vertical-align: -3px; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 32px; margin-bottom: 36px; }
+  .sec-title { font: 700 clamp(26px, 3vw, 36px)/1.3 var(--sans); color: #fff; }
+  .sec-title small { display: block; font: 600 13px var(--mono); color: var(--amber); letter-spacing: .06em; margin-bottom: 6px; }
+  .sec-lead { color: var(--sub); max-width: 520px; }
+
+  /* 포인트 컬러 지정 */
+  .c-green { --ac: var(--green); }
+  .c-cyan { --ac: var(--cyan); }
+  .c-purple { --ac: var(--purple); }
+  .c-amber { --ac: var(--amber); }
+  .c-gray { --ac: #9aa5a0; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips span { font: 12px var(--mono); color: var(--ac, var(--green)); border: 1px solid color-mix(in srgb, var(--ac, var(--green)) 45%, transparent); background: color-mix(in srgb, var(--ac, var(--green)) 8%, transparent); padding: 2px 8px; border-radius: 4px; }
+
+  /* 히어로 */
+  .hero { display: grid; grid-template-columns: 1.35fr 1fr; gap: 24px; align-items: stretch; padding: 32px 0 0; }
+  .hero .term { margin-top: 0; }
+  h1 { font: 700 clamp(44px, 6vw, 72px)/1.1 var(--sans); color: #fff; letter-spacing: -.02em; }
+  h1 small { display: block; font: 13px var(--mono); color: var(--green); letter-spacing: .2em; margin-top: 12px; }
+  .tagline { font: 600 clamp(20px, 2.2vw, 26px)/1.5 var(--sans); color: #fff; margin-top: 28px; }
+  .tagline em { font-style: normal; color: var(--green); }
+  .role { font: 15px var(--mono); color: var(--cyan); margin-top: 12px; min-height: 1.7em; }
+  .intro { margin-top: 16px; color: var(--sub); }
+  .btns { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { font: 13px var(--mono); color: var(--green); text-decoration: none; border: 1px solid color-mix(in srgb, var(--green) 50%, transparent); padding: 10px 16px; border-radius: 6px; transition: background .15s, color .15s; }
+  .btn:hover, .btn:focus-visible { background: var(--green); color: #000; }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+  .stat b { display: block; font: 700 32px/1.2 var(--mono); color: var(--ac); }
+  .stat span { font-size: 14px; color: var(--sub); }
+
+  /* 트레이스백: 가로 타임라인 */
+  .timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 10%; right: 10%; top: 10px; height: 1px; background: var(--line-strong); }
+  .era { display: flex; flex-direction: column; gap: 12px; position: relative; }
+  .era .dot { width: 21px; height: 21px; border-radius: 50%; border: 2px solid var(--ac); background: var(--bg); margin: 0 auto 8px; position: relative; }
+  .era.now .dot::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ac); }
+  .era-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 22px 20px; min-height: 236px; display: flex; flex-direction: column; gap: 4px; }
+  .era-year { font: 700 14px var(--mono); color: var(--ac); }
+  .era-card h3 { font: 700 18px/1.4 var(--sans); color: #fff; margin-top: 4px; }
+  .era-card .where { font-size: 13px; color: var(--muted); padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+  .era-card p { font-size: 15px; color: var(--sub); line-height: 1.7; margin-top: 10px; }
+  .sub { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+  .sub b { display: block; font-size: 14.5px; font-weight: 600; color: #fff; }
+  .sub span { display: block; font-size: 13px; color: var(--sub); margin-top: 2px; }
+
+  /* SCM 플로우 */
+  .flow { list-style: none; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 36px; }
+  .flow > li { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 22px 20px; }
+  .flow > li + li::before { content: "→"; position: absolute; left: -29px; top: 50%; transform: translateY(-50%); font: 700 20px var(--mono); color: var(--green); }
+  .flow-no { font: 600 12px var(--mono); color: var(--green); }
+  .flow h3 { font: 700 20px var(--sans); color: #fff; margin: 4px 0 12px; }
+  .flow ul li { list-style: none; font-size: 14.5px; color: var(--sub); padding-left: 14px; position: relative; margin-top: 4px; }
+  .flow ul li::before { content: "-"; position: absolute; left: 0; color: var(--muted); font-family: var(--mono); }
+
+  /* 케이스 */
+  .cases { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .case { border: 1px solid var(--line); border-radius: 8px; padding: 26px; display: flex; flex-direction: column; background: var(--card); transition: border-color .15s, transform .15s; }
+  .case:hover { border-color: color-mix(in srgb, var(--ac) 50%, transparent); transform: translateY(-2px); }
+  .case .tag { font: 12px var(--mono); color: var(--ac); }
+  .case h3 { font: 700 20px/1.45 var(--sans); color: #fff; margin-top: 6px; }
+  .case .delta { font: 700 24px var(--mono); color: var(--ac); margin-top: 12px; }
+  .case p { margin-top: 8px; font-size: 15px; color: var(--sub); flex: 1; }
+  .case .chips { margin-top: 16px; }
+  .case-open { margin-top: 18px; align-self: flex-start; background: none; border: 1px solid color-mix(in srgb, var(--ac) 50%, transparent); color: var(--ac); font: 13px var(--mono); padding: 8px 14px; border-radius: 6px; cursor: pointer; transition: background .15s, color .15s; }
+  .case-open:hover, .case-open:focus-visible { background: var(--ac); color: #000; }
+
+  /* 사례 연구 상세 */
+  .cs { width: min(820px, calc(100% - 32px)); max-height: calc(100vh - 48px); margin: auto; padding: 0; background: #0e1210; color: var(--text); border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; }
+  .cs[open] { display: flex; flex-direction: column; }
+  .cs::backdrop { background: rgba(0, 0, 0, .75); backdrop-filter: blur(3px); }
+  .cs .term-bar { flex: none; }
+  .cs-close { margin-left: auto; background: none; border: 1px solid var(--line-strong); color: var(--sub); font: 12px var(--mono); padding: 3px 9px; border-radius: 4px; cursor: pointer; }
+  .cs-close:hover, .cs-close:focus-visible { color: #fff; border-color: var(--sub); }
+  .cs-body { overflow-y: auto; padding: clamp(24px, 4vw, 44px); }
+  .cs-kicker { font: 600 12px var(--mono); color: var(--ac); letter-spacing: .06em; }
+  .cs h2 { font: 700 clamp(24px, 3vw, 30px)/1.35 var(--sans); color: #fff; margin-top: 8px; }
+  .cs-meta { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin: 26px 0; padding: 20px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .cs-meta b { display: block; font: 600 12px var(--mono); color: var(--muted); margin-bottom: 8px; }
+  .cs-meta span { font-size: 14.5px; color: var(--sub); }
+  .cs-time { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 4px; margin-bottom: 8px; }
+  .cs-time li { font-size: 14px; color: #fff; }
+  .cs-time li + li::before { content: "→ "; color: var(--ac); font-family: var(--mono); }
+  .cs-lead { font-size: 17px; color: var(--text); line-height: 1.8; }
+  .cs-note { margin-top: 10px; font-size: 13px; color: var(--muted); }
+  .cs h3 { font: 700 13px var(--mono); color: var(--ac); letter-spacing: .06em; text-transform: uppercase; margin: 32px 0 10px; }
+  .cs-body > p { color: var(--sub); }
+  .cs-steps { list-style: none; counter-reset: s; display: grid; gap: 12px; }
+  .cs-steps li { counter-increment: s; position: relative; padding: 14px 16px 14px 52px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; color: var(--sub); font-size: 15px; }
+  .cs-steps li::before { content: counter(s, decimal-leading-zero); position: absolute; left: 16px; top: 14px; font: 700 14px var(--mono); color: var(--ac); }
+  .cs-steps b { display: block; color: #fff; font-weight: 600; margin-bottom: 2px; }
+  .cs-result { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .cs-result div { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 18px; }
+  .cs-result b { display: block; font: 700 26px var(--mono); color: var(--ac); }
+  .cs-result span { font-size: 14px; color: var(--sub); }
+
+  /* 소개 짧게/길게 */
+  .bio-toggle { display: inline-flex; margin-top: 22px; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; }
+  .bio-toggle button { background: none; border: 0; color: var(--muted); font: 13px var(--mono); padding: 6px 12px; cursor: pointer; }
+  .bio-toggle button[aria-pressed="true"] { background: var(--green); color: #000; }
+  .bio-toggle + .intro { margin-top: 12px; }
+  nav a.active { color: #fff; text-decoration: underline; text-decoration-color: var(--green); text-underline-offset: 6px; }
+
+  /* 일하는 방식 */
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .principles > div { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 24px; }
+  .principles .no { font: 700 13px var(--mono); color: var(--ac); }
+  .principles h3 { font: 700 18px var(--sans); color: #fff; margin-top: 6px; }
+  .principles p { margin-top: 8px; color: var(--sub); font-size: 15px; }
+
+  /* 스택 */
+  .grid2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; }
+  .label { font: 600 14px var(--mono); color: var(--muted); letter-spacing: .08em; margin-bottom: 14px; }
+  .skill { border-bottom: 1px solid var(--line); padding: 18px 0; }
+  .skill-head { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 12px; }
+  .skill .name { font-weight: 600; font-size: 17px; color: #fff; white-space: nowrap; }
+  .skill .lv { font: 700 15px var(--mono); color: var(--amber); min-width: 1em; text-align: right; }
+  .bar { display: flex; gap: 4px; }
+  .bar i { width: 14px; height: 14px; border-radius: 3px; background: #2c312e; }
+  .bar i.on { background: var(--amber); }
+  .kw { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .kw code { font: 12.5px var(--mono); color: var(--amber); background: rgba(245, 184, 92, .08); border: 1px solid rgba(245, 184, 92, .35); padding: 2px 8px; border-radius: 4px; }
+  .list li { list-style: none; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .list li span:first-child { font-weight: 600; color: #fff; }
+  .list li small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+  .list li span:last-child { font: 13px var(--mono); color: var(--cyan); text-align: right; }
+
+  .mail { font: 400 clamp(16px, 1.6vw, 19px) var(--mono); color: var(--green); text-decoration: none; word-break: break-all; }
+  .mail:hover, .mail:focus-visible { text-decoration: underline; }
+
+  footer { display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 48px; font: 12px var(--mono); color: var(--muted); }
+  footer pre { font: 10px/1.25 var(--mono); color: var(--green); opacity: .7; }
+
+  /* 프로필 사진: 21프레임 스프라이트(졸라 → E3 → 원본 단순 혼합), 마우스 올리면 재생·떼면 역재생 */
+  .who { display: flex; align-items: center; gap: 28px; }
+  .morph { width: 150px; height: 150px; flex: none; border-radius: 12px; border: 1px solid var(--line-strong); cursor: pointer; background: #000 url(profile-morph.jpg) 0 0 / 2100% 100% no-repeat; transition: background-position 1.1s steps(21, jump-none); }
+  .morph:hover, .morph:focus-visible, .morph.on { background-position: 100% 0; }
+
+  @media (max-width: 1100px) {
+    .timeline { grid-template-columns: repeat(2, 1fr); }
+    .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .flow > li + li::before { display: none; }
+    .timeline::before { display: none; }
+    .era .dot { display: none; }
+    .era-card { min-height: 0; }
+  }
+  @media (max-width: 860px) {
+    main { padding: 0 16px 80px; }
+    nav .in { padding: 13px 16px; gap: 6px 18px; font-size: 14.3px; }
+    nav .logo { width: 100%; }
+    .hero, .grid2, .cases, .principles { grid-template-columns: 1fr; }
+    .cs-meta { grid-template-columns: 1fr; }
+    .who { gap: 18px; }
+    .morph { width: 110px; height: 110px; }
+    .timeline { grid-template-columns: 1fr; }
+    .flow { grid-template-columns: 1fr; gap: 28px; }
+    .flow > li + li::before { display: block; content: "↓"; left: 50%; top: -24px; transform: translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cursor { animation: none; }
+    html { scroll-behavior: auto; }
+    #boot { display: none; }
+    .morph { transition: none; }
+  }
+</style>
+<style>
+  /* 보호: 텍스트 선택·이미지 드래그 막기, 인쇄 시 내용 숨김 */
+  body { -webkit-user-select: none; user-select: none; }
+  img, .morph { -webkit-user-drag: none; user-drag: none; }
+  body.shield main { filter: blur(18px); }
+  @media print { body { display: none !important; } }
+</style>
+</head>
+<body>
+<div id="boot" aria-hidden="true"><pre id="boot-log"></pre></div>
+<canvas id="rain" aria-hidden="true"></canvas>
+<div class="vignette"></div>
+
+<nav aria-label="섹션"><div class="in">
+  <a class="logo" href="#top">~/seunghwan</a>
+  <a href="#traceback"><span>[01]</span>traceback</a>
+  <a href="#flow"><span>[02]</span>scm_flow</a>
+  <a href="#cases"><span>[03]</span>case_files</a>
+  <a href="#human"><span>[04]</span>about_me</a>
+  <a href="#stack"><span>[05]</span>stack</a>
+  <a href="#contact"><span>[06]</span>contact</a>
+</div></nav>
+
+<main>
+  <section class="hero" id="top">
+    <div class="term">
+      <div class="term-bar"><i></i><i></i><i></i><span>~/seunghwan — zsh</span></div>
+      <div class="term-body">
+        <p class="prompt"><b>$</b> whoami</p>
+        <div class="who">
+          <div class="morph" tabindex="0" role="img" aria-label="김승환 프로필 사진"></div>
+          <h1>김승환<small>KIM SEUNG HWAN · SCM</small></h1>
+        </div>
+        <p class="tagline">창고 바닥에서 시작해,<br><em>재고가 흐르는 길</em>을 시스템으로 설계합니다.</p>
+        <p class="role">&gt; <span id="typed"></span><span class="cursor"></span></p>
+        <div class="bio-toggle" role="group" aria-label="소개 길이">
+          <button type="button" data-bio="short" aria-pressed="true">--short</button>
+          <button type="button" data-bio="long" aria-pressed="false">--verbose</button>
+        </div>
+        <p class="intro" data-bio-text="short">물류를 직접 운영하고, 데이터로 문제를 찾아 개선합니다.</p>
+        <p class="intro" data-bio-text="long" hidden>데이터로 움직이는 물류 프로세스를 만듭니다. 현장의 문제를 숫자로 정의하고, 반복되는 수작업은 시스템으로 바꾸고, 국경을 넘는 물류까지 하나의 흐름으로 잇습니다.<br><br>크로스보더 물류의 배송비와 리드타임 구조를 개선했고, 연 8천억원 규모 상품의 재고 배분을 수요예측 기반으로 운영했습니다. 시스템 도입부터 수기 업무 전환까지, MD·개발 조직과 함께 실행해 왔습니다.</p>
+        <div class="btns">
+          <a class="btn" href="#traceback">./traceback --start</a>
+          <a class="btn" href="#contact">contact --me</a>
+        </div>
+      </div>
+    </div>
+    <div class="term" aria-label="핵심 지표">
+      <div class="term-bar"><i></i><i></i><i></i><span>metrics.sh</span></div>
+      <div class="term-body">
+        <p class="prompt"><b>$</b> ./metrics --highlights</p>
+        <div class="stats">
+          <div class="stat"><b data-count="6" data-suffix="년">0</b><span>물류·SCM 경력<br>(총 경력 9년)</span></div>
+          <div class="stat"><b data-count="3" data-suffix="개">0</b><span>ERP·OMS·WMS<br>시스템 도입·기획 경험</span></div>
+          <div class="stat"><b data-count="30" data-suffix="%">0</b><span>폐기율 감소<br>(전년 대비)</span></div>
+          <div class="stat"><b data-count="8" data-suffix="개국">0</b><span>12개 채널<br>크로스보더 운영</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="term" id="traceback">
+    <div class="term-bar"><i></i><i></i><i></i><span>traceback.log</span></div>
+    <div class="term-body">
+      <p class="prompt"><b>$</b> git log --reverse career</p>
+      <div class="sec-head">
+        <h2 class="sec-title"><small>[01] TRACEBACK</small>현장에서 시스템까지, 한 단계씩</h2>
+        <p class="sec-lead">박스를 나르던 손이 로케이션을 만들고, 숫자를 배우고, 결국 시스템을 설계하게 된 과정입니다.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="era">
+          <div class="dot"></div>
+          <div class="era-card">
+            <div class="era-year">2015</div>
+            <h3>창고 정리가 첫 '설계'였다</h3>
+            <div class="where">맨토스파트너 · 슈펜 부산대점</div>
+            <p>뒤섞인 창고를 구역별 로케이션으로 바꾸며 물류에 빠졌습니다.</p>
+          </div>
+          <div class="sub"><b>로케이션 체계 도입</b><span>카테고리·사이즈 구역화 · 재고 오류 감소</span></div>
+          <div class="sub"><b>매장·창고 운영</b><span>입출고 · 스케줄 · 일 정산</span></div>
+        </div>
+
+        <div class="era">
+          <div class="dot"></div>
+          <div class="era-card">
+            <div class="era-year">2018 – 2019</div>
+            <h3>숫자의 언어를 배우다</h3>
+            <div class="where">부산경상대 세무회계과 · 세무회계사무소</div>
+            <p>ERP로 전표를 자동화하며 '반복은 시스템의 몫'임을 체감했습니다.</p>
+          </div>
+          <div class="sub"><b>세무·기장대리</b><span>20여 개 기업 · 부가세·법인세 신고</span></div>
+          <div class="sub"><b>ERP 전표 자동화</b><span>더존 Smart A · 업무 효율 +30%</span></div>
+        </div>
+
+        <div class="era">
+          <div class="dot"></div>
+          <div class="era-card">
+            <div class="era-year">2019 – 2022</div>
+            <h3>하루 2만 개가 나가는 현장</h3>
+            <div class="where">브랜디 · 아비드이앤에프 — SCM</div>
+            <p>현장의 문제를 데이터로 정의하고 프로세스로 푸는 법을 배웠습니다.</p>
+          </div>
+          <div class="sub"><b>ICQA 신설</b><span>재고 오차율 −90%</span></div>
+          <div class="sub"><b>자사 WMS 기획</b><span>요건·QA·UI · 생산성 +22%</span></div>
+          <div class="sub"><b>도심형 센터 레이아웃</b><span>동선 추적 설계 · 피킹 +17%</span></div>
+        </div>
+
+        <div class="era">
+          <div class="dot"></div>
+          <div class="era-card">
+            <div class="era-year">2023 – 2024</div>
+            <h3>국경을 넘는 물류</h3>
+            <div class="where">스킨이데아 (MEDIPEEL) — 물류기획</div>
+            <p>8개국 12개 채널의 주문을 하나의 출고 흐름으로 묶었습니다.</p>
+          </div>
+          <div class="sub"><b>다채널 통합 출고</b><span>Amazon · Shopee · Lazada · Qoo10 · Rakuten</span></div>
+          <div class="sub"><b>ERP·OMS 도입</b><span>더존 iCUBE 연동 · 처리시간 −25%</span></div>
+          <div class="sub"><b>해외 거점 구축</b><span>FBA·SBS·홍콩 3PL · 물류비 −20%</span></div>
+        </div>
+
+        <div class="era">
+          <div class="dot"></div>
+          <div class="era-card">
+            <div class="era-year">2024 – 2026</div>
+            <h3>예측으로 재고를 움직이다</h3>
+            <div class="where">우아한형제들 — SCM · B마트</div>
+            <p>연 8천억원 규모 상품을 수요예측과 PLC 등급으로 배분했습니다.</p>
+          </div>
+          <div class="sub"><b>재고 이관 운영</b><span>수요예측·안전재고 기반 산정</span></div>
+          <div class="sub"><b>폐기 예측 리포트</b><span>폐기율 전년 대비 −30%</span></div>
+          <div class="sub"><b>이관 산출 자동화</b><span>정확도 95%+ · 5시간 → 1회 배치</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="term" id="flow">
+    <div class="term-bar"><i></i><i></i><i></i><span>scm_flow.sh</span></div>
+    <div class="term-body">
+      <p class="prompt"><b>$</b> ./scm_flow --layers</p>
+      <div class="sec-head">
+        <h2 class="sec-title"><small>[02] THE SCM FLOW</small>재고가 흐르는 모든 레이어</h2>
+        <p class="sec-lead">현장에서 국경 너머까지, 상품이 흐르는 다섯 단계에서 제가 하는 일입니다.</p>
+      </div>
+
+      <ol class="flow">
+        <li><span class="flow-no">01 · FLOOR</span><h3>현장</h3><ul><li>센터 레이아웃·동선 설계</li><li>출고 현장·인력 운영</li></ul></li>
+        <li><span class="flow-no">02 · ACCURACY</span><h3>정확도</h3><ul><li>실물·전산 재고 대조</li><li>기준정보 통합·표준화</li></ul></li>
+        <li><span class="flow-no">03 · FORECAST</span><h3>예측</h3><ul><li>수요예측 기반 이관량 산정</li><li>폐기 예측·소진 대응</li></ul></li>
+        <li><span class="flow-no">04 · SYSTEM</span><h3>시스템</h3><ul><li>현업 요구사항 정의</li><li>검증 후 시스템 전환</li></ul></li>
+        <li><span class="flow-no">05 · CROSS-BORDER</span><h3>크로스보더</h3><ul><li>다채널 주문 통합 출고</li><li>통관·3PL 관리</li></ul></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="term" id="cases">
+    <div class="term-bar"><i></i><i></i><i></i><span>case_files/</span></div>
+    <div class="term-body">
+      <p class="prompt"><b>$</b> ls -la ./case_files</p>
+      <div class="sec-head">
+        <h2 class="sec-title"><small>[03] CASE FILES</small>문제를 정의하고, 끝까지 검증한 일들</h2>
+      </div>
+      <div class="cases">
+        <article class="case c-green">
+          <span class="tag">#automation · 2025</span>
+          <h3>엑셀 5시간을 1회 배치로</h3>
+          <div class="delta">5h → 1 batch</div>
+          <p>수기로 하던 이관수량 산출 로직을 요건으로 정의하고, 자동화 결과와 수기 결과를 매일 1:1로 대조했습니다. 정확도 95%를 넘긴 뒤에야 실사용으로 전환했습니다.</p>
+          <div class="chips"><span>요건정의</span><span>검증</span><span>개발 협업</span></div>
+          <button class="case-open" type="button" data-open="cs-auto">case_study --open →</button>
+        </article>
+        <article class="case c-purple">
+          <span class="tag">#forecast · 2025</span>
+          <h3>버려질 재고를 미리 본다</h3>
+          <div class="delta">폐기율 −30%</div>
+          <p>전 거점 재고·유통기한·수요예측을 결합한 일일 폐기 예측 리포트를 운영하며, MD와 할인·노출 강화로 소진을 앞당겼습니다.</p>
+          <div class="chips"><span>리포팅</span><span>MD 협업</span></div>
+          <button class="case-open" type="button" data-open="cs-waste">case_study --open →</button>
+        </article>
+        <article class="case c-amber">
+          <span class="tag">#cross-border · 2023</span>
+          <h3>8개국 12개 채널, 하나의 출고</h3>
+          <div class="delta">처리시간 −25%</div>
+          <p>Amazon·Shopee·Lazada·Qoo10·Rakuten 주문을 OMS로 통합하고, ERP에서 WMS 출고까지 데이터가 끊기지 않게 연결했습니다.</p>
+          <div class="chips"><span>OMS</span><span>ERP 연동</span><span>통관</span></div>
+          <button class="case-open" type="button" data-open="cs-cross">case_study --open →</button>
+        </article>
+        <article class="case c-cyan">
+          <span class="tag">#accuracy · 2021</span>
+          <h3>없던 업무, ICQA를 만들다</h3>
+          <div class="delta">오차율 −90%</div>
+          <p>재고수불 책임자로서 정기 실물·전산 대조 체계를 신설하고, 부진재고 소진까지 기획해 적재 CAPA를 되찾았습니다.</p>
+          <div class="chips"><span>재고실사</span><span>프로세스 신설</span></div>
+          <button class="case-open" type="button" data-open="cs-icqa">case_study --open →</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 사례 연구 상세 -->
+  <dialog class="cs c-green" id="cs-auto" aria-labelledby="cs-auto-t">
+    <div class="term-bar"><i></i><i></i><i></i><span>case_files/automation.md</span><button class="cs-close" type="button" aria-label="닫기">esc ✕</button></div>
+    <div class="cs-body">
+      <span class="cs-kicker">CASE STUDY · 우아한형제들</span>
+      <h2 id="cs-auto-t">이관수량 산출 자동화: 엑셀 5시간을 1회 배치로</h2>
+      <div class="cs-meta">
+        <div><b>Timeline</b><ol class="cs-time"><li>요건 정의</li><li>개발 협의</li><li>병행 검증</li><li>실사용 전환</li></ol><span>2025.07 – 2026.08</span></div>
+        <div><b>My Role</b><span>현업 담당자<br>업무 요건 정의 · 검증</span></div>
+      </div>
+      <p class="cs-lead">B마트 상품을 중앙물류기지에서 피패킹센터로 보내는 이관수량은 매일 엑셀로 계산되고 있었습니다. 이 사례는 그 수기 로직을 시스템이 이해할 수 있는 요건으로 옮기고, 결과를 믿을 수 있을 때까지 검증해 실사용으로 전환한 과정입니다.</p>
+      <p class="cs-note">※ 회사 내부 정보 보호를 위해 일부 내용은 일반화했습니다.</p>
+      <h3>The Challenge</h3>
+      <p>이관수량 산출에 하루 5시간이 걸렸습니다. 온도대와 물류유형마다 기준이 달라 예외가 많았고, 계산 로직이 담당자의 엑셀 안에만 존재했습니다.</p>
+      <h3>The Approach</h3>
+      <ol class="cs-steps">
+        <li><b>수기 로직을 요건으로</b>엑셀에 흩어진 산출 로직을 업무 요건으로 정의했습니다.</li>
+        <li><b>개발팀과 산식 합의</b>산식, 예외 케이스, 운영 프로세스를 개발팀과 하나씩 맞췄습니다.</li>
+        <li><b>매일 1:1 대조</b>자동화 결과와 기존 수기 결과를 일 단위로 나란히 비교했습니다.</li>
+        <li><b>오차 원인 추적</b>차이가 나면 원인을 분석해 개선을 요청하고, 다시 검증하는 과정을 반복했습니다.</li>
+      </ol>
+      <h3>The Outcome</h3>
+      <div class="cs-result"><div><b>95%+</b><span>산출 정확도 확보 후 전환</span></div><div><b>5h → 1</b><span>하루 5시간 업무를 1회 배치로</span></div></div>
+    </div>
+  </dialog>
+
+  <dialog class="cs c-purple" id="cs-waste" aria-labelledby="cs-waste-t">
+    <div class="term-bar"><i></i><i></i><i></i><span>case_files/forecast.md</span><button class="cs-close" type="button" aria-label="닫기">esc ✕</button></div>
+    <div class="cs-body">
+      <span class="cs-kicker">CASE STUDY · 우아한형제들</span>
+      <h2 id="cs-waste-t">일일 폐기 예측: 버려질 재고를 미리 본다</h2>
+      <div class="cs-meta">
+        <div><b>Timeline</b><ol class="cs-time"><li>리포트 인수</li><li>MD 공유</li><li>소진 협의</li><li>수식 자동화</li></ol><span>2025.07 – 2026.08</span></div>
+        <div><b>My Role</b><span>리포트 운영 담당<br>MD 협업</span></div>
+      </div>
+      <p class="cs-lead">유통기한이 있는 상품은 팔리지 않으면 그대로 비용이 됩니다. 이 사례는 폐기를 사후에 집계하는 대신, 매일 미리 예측하고 MD와 함께 소진 대응을 앞당긴 과정입니다.</p>
+      <p class="cs-note">※ 회사 내부 정보 보호를 위해 일부 내용은 일반화했습니다.</p>
+      <h3>The Challenge</h3>
+      <p>전 거점에 흩어진 재고 중 무엇이 언제 폐기될지 미리 알기 어려웠고, 소진 대응은 MD 각 파트의 판단에 맡겨져 있었습니다.</p>
+      <h3>The Approach</h3>
+      <ol class="cs-steps">
+        <li><b>예상 폐기 산출</b>전 거점 재고, 유통기한, 수요예측을 결합해 예상 폐기 수량과 금액을 매일 계산했습니다.</li>
+        <li><b>MD 파트별 공유</b>산출 결과를 각 MD 파트에 나눠 전달했습니다.</li>
+        <li><b>소진 대응 협의</b>할인, 구좌 노출 강화 등 소진 방법을 상시로 협의했습니다.</li>
+        <li><b>반복 구간 자동화</b>매일 손으로 하던 구간은 수식으로 바꿨습니다.</li>
+      </ol>
+      <h3>The Outcome</h3>
+      <div class="cs-result"><div><b>−30%</b><span>폐기율 (전년 동기 대비) 감소에 기여</span></div><div><b>Daily</b><span>사후 집계에서 매일 예측으로</span></div></div>
+    </div>
+  </dialog>
+
+  <dialog class="cs c-amber" id="cs-cross" aria-labelledby="cs-cross-t">
+    <div class="term-bar"><i></i><i></i><i></i><span>case_files/cross-border.md</span><button class="cs-close" type="button" aria-label="닫기">esc ✕</button></div>
+    <div class="cs-body">
+      <span class="cs-kicker">CASE STUDY · 스킨이데아 (MEDIPEEL)</span>
+      <h2 id="cs-cross-t">크로스보더 물류: 8개국 12개 채널, 하나의 출고</h2>
+      <div class="cs-meta">
+        <div><b>Timeline</b><ol class="cs-time"><li>OMS·ERP 도입</li><li>출고 체계 통합</li><li>물류사 비딩</li><li>해외 거점 구축</li></ol><span>2023.05 – 2024.04</span></div>
+        <div><b>My Role</b><span>물류기획 · 해외물류 주임<br>시스템 도입 · 물류사 계약</span></div>
+      </div>
+      <p class="cs-lead">미국·일본·동남아 8개국, Amazon·Shopee·Lazada·Qoo10·Rakuten 등 12개 채널의 주문을 하나의 흐름으로 묶은 과정입니다. 시스템과 물류사, 해외 거점을 함께 정비해 비용과 리드타임을 줄였습니다.</p>
+      <h3>The Challenge</h3>
+      <p>채널마다 주문이 따로 들어오고, 국가마다 통관 기준이 달랐습니다. 주문 접수부터 출고까지 데이터가 끊겨 수작업이 많았습니다.</p>
+      <h3>The Approach</h3>
+      <ol class="cs-steps">
+        <li><b>주문 통합</b>OMS(셀메이트·SelluSeller) 초기 설정을 주도해 해외 다채널 주문을 한 시스템에서 관리했습니다.</li>
+        <li><b>데이터 연동</b>더존 iCUBE로 주문 접수부터 WMS 출고까지 데이터가 이어지게 했습니다.</li>
+        <li><b>물류사 비딩·통관 정리</b>다수의 특송·물류사와 직접 비딩하고, 국가별 통관 기준을 체계화했습니다.</li>
+        <li><b>해외 거점 구축</b>아마존 FBA, 싱가포르·말레이시아 쇼피 SBS, 홍콩 3PL을 계약하고 재고이전을 관리했습니다.</li>
+      </ol>
+      <h3>The Outcome</h3>
+      <div class="cs-result"><div><b>−25%</b><span>업무 처리 시간</span></div><div><b>−20%</b><span>물류비</span></div><div><b>−0.8일</b><span>리드타임</span></div></div>
+    </div>
+  </dialog>
+
+  <dialog class="cs c-cyan" id="cs-icqa" aria-labelledby="cs-icqa-t">
+    <div class="term-bar"><i></i><i></i><i></i><span>case_files/accuracy.md</span><button class="cs-close" type="button" aria-label="닫기">esc ✕</button></div>
+    <div class="cs-body">
+      <span class="cs-kicker">CASE STUDY · 아비드이앤에프</span>
+      <h2 id="cs-icqa-t">ICQA 신설: 없던 업무로 재고 오차율 90% 감소</h2>
+      <div class="cs-meta">
+        <div><b>Timeline</b><ol class="cs-time"><li>업무 신설</li><li>대조 체계 구축</li><li>부진재고 소진</li></ol><span>2021.11 – 2022.02</span></div>
+        <div><b>My Role</b><span>재고수불 · 재고실사 책임자</span></div>
+      </div>
+      <p class="cs-lead">시스템의 재고와 선반 위 실물이 다르면 그 위의 모든 판단이 흔들립니다. 이 사례는 재고 정확도를 전담하는 ICQA 업무를 새로 만들고, 정기적으로 맞춰보는 체계를 정착시킨 과정입니다.</p>
+      <h3>The Challenge</h3>
+      <p>실물과 전산 재고가 맞지 않았고, 이를 정기적으로 확인하는 담당 업무가 없었습니다. 팔리지 않는 재고가 적재 공간도 차지하고 있었습니다.</p>
+      <h3>The Approach</h3>
+      <ol class="cs-steps">
+        <li><b>ICQA 업무 신설</b>재고조사를 전담하는 업무를 새로 정의했습니다.</li>
+        <li><b>정기 대조 체계</b>실물과 전산 재고를 정기적으로 대조하는 절차를 만들었습니다.</li>
+        <li><b>부진재고 소진</b>팔리지 않는 재고의 소진을 기획해 적재 공간을 되찾았습니다.</li>
+      </ol>
+      <h3>The Outcome</h3>
+      <div class="cs-result"><div><b>−90%</b><span>재고 오차율</span></div><div><b>CAPA</b><span>재고 정확성 · 적재 효율 개선</span></div></div>
+    </div>
+  </dialog>
+
+  <section class="term" id="human">
+    <div class="term-bar"><i></i><i></i><i></i><span>README.md</span></div>
+    <div class="term-body">
+      <p class="prompt"><b>$</b> cat README.md</p>
+      <div class="sec-head">
+        <h2 class="sec-title"><small>[04] THE HUMAN BEHIND THE FLOW</small>제가 일하는 방식</h2>
+      </div>
+      <div class="principles">
+        <div class="c-green">
+          <span class="no">#01</span>
+          <h3>기획 단계부터 함께합니다</h3>
+          <p>스타트업의 빠른 변화와 제한된 환경에서 기획 단계부터 참여한 프로젝트 다수. 정해진 답이 없을 때 기준부터 만들어 왔습니다.</p>
+        </div>
+        <div class="c-purple">
+          <span class="no">#02</span>
+          <h3>수작업은 끝까지 의심합니다</h3>
+          <p>매일 반복되는 일이 있다면 수식으로, 그다음엔 시스템으로. 다만 검증이 끝나기 전엔 바꾸지 않습니다.</p>
+        </div>
+        <div class="c-amber">
+          <span class="no">#03</span>
+          <h3>창구를 하나로 만듭니다</h3>
+          <p>MD, 개발, 재무, 협력사 사이에 흩어진 질문을 한곳으로 모으고, 반복되는 답은 문서로 남깁니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="term" id="stack">
+    <div class="term-bar"><i></i><i></i><i></i><span>stack.json</span></div>
+    <div class="term-body">
+      <p class="prompt"><b>$</b> ls ~/skills ~/certs ~/edu</p>
+      <div class="grid2">
+        <div>
+          <h2 class="label">// SKILLS</h2>
+          <div class="skill">
+            <div class="skill-head"><span class="name">Excel</span><span class="bar" data-level="8" role="img" aria-label="10점 중 8점"></span><span class="lv">8</span></div>
+            <div class="kw"><code>IFS</code><code>UNIQUE</code><code>FILTER</code><code>SORT</code><code>다중 조건 피벗</code><code>Power Query · 기초</code></div>
+          </div>
+          <div class="skill">
+            <div class="skill-head"><span class="name">SCM System</span><span class="bar" data-level="8" role="img" aria-label="10점 중 8점"></span><span class="lv">8</span></div>
+            <div class="kw"><code>SI</code><code>SM</code><code>SR</code><code>QA</code></div>
+          </div>
+          <div class="skill">
+            <div class="skill-head"><span class="name">English</span><span class="bar" data-level="5" role="img" aria-label="10점 중 5점"></span><span class="lv">5</span></div>
+            <div class="kw"><code>A2</code><code>번역 도구 활용</code><code>업무 이메일</code><code>문서 작성</code></div>
+          </div>
+        </div>
+        <div>
+          <h2 class="label">// CERTIFICATIONS</h2>
+          <ul class="list">
+            <li><span>ERP 정보관리사</span><span>물류 1급 · 인사 1급 · 생산 2급</span></li>
+            <li><span>전산회계</span><span>1급</span></li>
+            <li><span>전산세무</span><span>2급</span></li>
+            <li><span>컴퓨터활용능력</span><span>2급</span></li>
+          </ul>
+          <h2 class="label" style="margin-top:36px">// EDUCATION</h2>
+          <ul class="list">
+            <li><span>부산경상대학교 세무회계과<small>학과 총무 (2019)</small></span><span>전문학사 · 2018–2020</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="term" id="contact">
+    <div class="term-bar"><i></i><i></i><i></i><span>contact</span></div>
+    <div class="term-body">
+      <p class="prompt"><b>$</b> echo $EMAIL</p>
+      <a class="mail" data-u="akakm1174" data-d="gmail.com">[이메일 불러오는 중]</a>
+    </div>
+  </section>
+
+  <footer>
+    <pre aria-hidden="true"> _____     ____________________
+|     |   |                    |___\_
+| SKU |   |                    |_____|_
+|_____|   |____________________|_______|
+           (o)  (o)        (o)    (o) </pre>
+    <span>© 2026 Kim Seung Hwan — all systems operational</span>
+  </footer>
+</main>
+
+<script>
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 부팅 시퀀스
+  const boot = document.getElementById('boot');
+  if (!reduce) {
+    const lines = ['> connecting to warehouse... OK', '> loading inventory... 001 015 030 050', '> syncing ERP · OMS · WMS... OK', '> [LOG]: initializing seunghwan.profile... OK'];
+    const log = document.getElementById('boot-log');
+    lines.forEach((l, i) => setTimeout(() => log.textContent += l + '\n', i * 260));
+    setTimeout(() => boot.classList.add('done'), lines.length * 260 + 300);
+    boot.addEventListener('click', () => boot.classList.add('done'));
+  }
+
+  // 매트릭스 레인 (0과 1)
+  const c = document.getElementById('rain'), ctx = c.getContext('2d');
+  const size = 16;
+  let drops = [];
+  function resize() {
+    c.width = innerWidth; c.height = innerHeight;
+    drops = Array.from({ length: Math.ceil(c.width / size) }, () => Math.random() * -50);
+  }
+  function draw() {
+    ctx.fillStyle = 'rgba(5, 8, 6, .08)';
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.font = size + 'px monospace';
+    drops.forEach((y, i) => {
+      ctx.fillStyle = Math.random() > .975 ? '#d8ffe6' : '#3ddc84';
+      ctx.fillText(Math.random() < .5 ? '0' : '1', i * size, y * size);
+      drops[i] = y * size > c.height && Math.random() > .975 ? 0 : y + 1;
+    });
+  }
+  resize();
+  addEventListener('resize', resize);
+  if (reduce) { for (let i = 0; i < 60; i++) draw(); }
+  else setInterval(draw, 55);
+
+  // 스킬 막대
+  document.querySelectorAll('.bar').forEach(b => {
+    b.innerHTML = Array.from({ length: 10 }, (_, i) => `<i${i < b.dataset.level ? ' class="on"' : ''}></i>`).join('');
+  });
+
+  // 타이핑 문구
+  const roles = ['SCM · 재고 관리 · 물류 운영', 'ERP · OMS · WMS 시스템 전환', '업무 자동화 · 요구사항 정의 · 검증'];
+  const el = document.getElementById('typed');
+  if (reduce) el.textContent = roles[0];
+  else {
+    let r = 0, i = 0, del = false;
+    (function tick() {
+      el.textContent = roles[r].slice(0, i);
+      if (!del && i++ === roles[r].length) { del = true; return setTimeout(tick, 1800); }
+      if (del && i-- === 0) { del = false; i = 0; r = (r + 1) % roles.length; }
+      setTimeout(tick, del ? 30 : 70);
+    })();
+  }
+
+  // 사례 연구 열기/닫기 (Esc는 dialog 기본 동작)
+  document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => document.getElementById(b.dataset.open).showModal()));
+  document.querySelectorAll('dialog.cs').forEach(d => {
+    d.querySelector('.cs-close').addEventListener('click', () => d.close());
+    d.addEventListener('click', e => { if (e.target === d) d.close(); });
+  });
+
+  // 소개 짧게/길게
+  document.querySelectorAll('[data-bio]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-bio]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    document.querySelectorAll('[data-bio-text]').forEach(p => p.hidden = p.dataset.bioText !== b.dataset.bio);
+  }));
+
+  // 메뉴 현재 위치 표시
+  const navLinks = [...document.querySelectorAll('nav a[href^="#"]:not(.logo)')];
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) navLinks.forEach(a => a.classList.toggle('active', a.hash === '#' + e.target.id));
+  }), { rootMargin: '-40% 0px -55% 0px' });
+  navLinks.forEach(a => spy.observe(document.querySelector(a.hash)));
+
+  // 프로필 사진: 터치 기기는 탭으로 전환
+  document.querySelectorAll(".morph").forEach(m => m.addEventListener("click", () => m.classList.toggle("on")));
+
+
+  // ===== 보호 기능 (완벽한 차단은 불가능, 일반 방문자의 손쉬운 복사·저장을 막는 수준) =====
+  // 이메일: HTML에 주소를 그대로 두지 않아 단순 수집 봇이 못 읽게 함
+  document.querySelectorAll('.mail[data-u]').forEach(a => { const e = a.dataset.u + '@' + a.dataset.d; a.href = 'mailto:' + e; a.textContent = e; });
+  // 오른쪽 마우스, 드래그 금지
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('dragstart', e => e.preventDefault());
+  // 저장·소스보기·인쇄·개발자도구 단축키 막기
+  document.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
+    if (e.key === 'F12' || (mod && ['s', 'u', 'p'].includes(k)) || (mod && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
+  });
+  // 캡처 억제: PrintScreen 키나 창이 포커스를 잃으면(캡처 도구 실행 시) 잠시 화면을 흐리게
+  const shield = on => document.body.classList.toggle('shield', on);
+  document.addEventListener('keyup', e => { if (e.key === 'PrintScreen') { try { navigator.clipboard.writeText(''); } catch (_) {} shield(true); setTimeout(() => shield(false), 1500); } });
+  addEventListener('blur', () => shield(true));
+  addEventListener('focus', () => shield(false));
+  // 숫자 카운트업
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    io.unobserve(e.target);
+    const b = e.target, end = +b.dataset.count, suf = b.dataset.suffix || '';
+    if (reduce) return b.textContent = end + suf;
+    let n = 0;
+    const t = setInterval(() => { n++; b.textContent = Math.round(end * n / 30) + suf; if (n >= 30) clearInterval(t); }, 25);
+  }));
+  document.querySelectorAll('[data-count]').forEach(b => io.observe(b));
+</script>
+</body>
+</html>
