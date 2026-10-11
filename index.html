@@ -202,6 +202,8 @@
 
   .mail { font: 400 clamp(16px, 1.6vw, 19px) var(--mono); color: var(--green); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; word-break: break-all; }
   .mail:hover, .mail:focus-visible { text-decoration: underline; }
+  .copied { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; vertical-align: middle; font: 600 13px var(--sans); color: #000; background: var(--green); padding: 4px 10px; border-radius: 999px; opacity: 0; transform: translateX(-6px) scale(.9); transition: opacity .2s, transform .2s; pointer-events: none; }
+  .copied.show { opacity: 1; transform: none; }
 
   footer { display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 48px; font: 12px var(--mono); color: var(--muted); }
   footer pre { font: 10px/1.25 var(--mono); color: var(--green); opacity: .7; cursor: pointer; transition: opacity .2s; }
@@ -610,7 +612,7 @@
     <div class="term-bar"><i></i><i></i><i></i><span>contact</span></div>
     <div class="term-body">
       <p class="prompt"><b>$</b> echo $EMAIL</p>
-      <button class="mail" type="button" data-u="akakm1174" data-d="gmail.com" title="클릭하면 복사됩니다">[이메일 불러오는 중]</button>
+      <button class="mail" type="button" data-u="akakm1174" data-d="gmail.com" title="클릭하면 복사됩니다">[이메일 불러오는 중]</button><span class="copied" role="status" aria-live="polite">✓ 클립보드에 복사됨</span>
     </div>
   </section>
 
@@ -731,12 +733,13 @@
 
   // ===== 보호 기능 (완벽한 차단은 불가능, 일반 방문자의 손쉬운 복사·저장을 막는 수준) =====
   // 이메일: HTML에 주소를 그대로 두지 않아 단순 수집 봇이 못 읽게 함
-  // 누르면 클립보드에 복사, 잠깐 '복사됨' 표시
+  // 누르면 클립보드에 복사, 이메일 옆에 '복사됨' 배지를 잠깐 띄움
   document.querySelectorAll('.mail[data-u]').forEach(a => {
-    const e = a.dataset.u + '@' + a.dataset.d; a.textContent = e;
+    const e = a.dataset.u + '@' + a.dataset.d, badge = a.nextElementSibling;
+    a.textContent = e;
     a.addEventListener('click', async () => {
       try { await navigator.clipboard.writeText(e); } catch (_) { return; }
-      a.textContent = '복사됨 ✓'; clearTimeout(a._t); a._t = setTimeout(() => a.textContent = e, 1500);
+      badge.classList.add('show'); clearTimeout(a._t); a._t = setTimeout(() => badge.classList.remove('show'), 1800);
     });
   });
   // 오른쪽 마우스, 드래그 금지
