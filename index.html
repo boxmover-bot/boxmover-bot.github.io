@@ -41,7 +41,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body { background: var(--bg); color: var(--text); font: 16px/1.75 var(--sans); overflow-x: hidden; word-break: keep-all; }
-  #rain { position: fixed; inset: 0; z-index: 0; opacity: .22; }
+  #rain { position: fixed; inset: 0; z-index: 0; opacity: .22; pointer-events: none; transition: opacity .6s; }
+  #rain.front { z-index: 30; opacity: .9; }
   .vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.7) 100%); }
   main { position: relative; z-index: 3; max-width: 1240px; margin: 0 auto; padding: 0 24px 96px; }
 
@@ -209,8 +210,6 @@
   /* 이스터에그: 트럭 배송 */
   .truck-run { position: fixed; left: 0; bottom: 18px; z-index: 20; margin: 0; font: 12px/1.25 var(--mono); color: var(--green); pointer-events: none; animation: drive 2.6s cubic-bezier(.5, 0, .7, 1) forwards; }
   @keyframes drive { from { transform: translateX(-320px); } to { transform: translateX(calc(100vw + 40px)); } }
-  .toast { position: fixed; left: 50%; bottom: 28px; z-index: 21; transform: translate(-50%, 12px); opacity: 0; background: #000; border: 1px solid var(--green); color: var(--green); font: 14px var(--mono); padding: 10px 16px; border-radius: 6px; transition: opacity .3s, transform .3s; pointer-events: none; white-space: nowrap; }
-  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   /* 프로필 사진: 21프레임 스프라이트(졸라 → E3 → 원본 단순 혼합), 마우스 올리면 재생·떼면 역재생 */
   .who { display: flex; align-items: center; gap: 28px; }
@@ -638,7 +637,6 @@
   }
 
   // 매트릭스 레인 (0과 1)
-  let glyph = () => (Math.random() < .5 ? '0' : '1');
   const c = document.getElementById('rain'), ctx = c.getContext('2d');
   const size = 16;
   let drops = [];
@@ -647,12 +645,14 @@
     drops = Array.from({ length: Math.ceil(c.width / size) }, () => Math.random() * -50);
   }
   function draw() {
-    ctx.fillStyle = 'rgba(5, 8, 6, .08)';
+    ctx.globalCompositeOperation = 'destination-out'; // 캔버스를 투명하게 유지하며 잔상만 지움
+    ctx.fillStyle = 'rgba(0, 0, 0, .08)';
     ctx.fillRect(0, 0, c.width, c.height);
+    ctx.globalCompositeOperation = 'source-over';
     ctx.font = size + 'px monospace';
     drops.forEach((y, i) => {
       ctx.fillStyle = Math.random() > .975 ? '#d8ffe6' : '#3ddc84';
-      ctx.fillText(glyph(), i * size, y * size);
+      ctx.fillText(Math.random() < .5 ? '0' : '1', i * size, y * size);
       drops[i] = y * size > c.height && Math.random() > .975 ? 0 : y + 1;
     });
   }
@@ -721,35 +721,27 @@
   addEventListener('blur', () => shield(true));
   addEventListener('focus', () => shield(false));
   // ===== 이스터에그 =====
-  const toast = (msg, ms = 2600) => {
-    let t = document.querySelector('.toast');
-    if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
-    t.textContent = msg; t.classList.add('show');
-    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms);
-  };
   // 1) 푸터 트럭 클릭 → 화면을 가로질러 배송
   const truck = document.getElementById('truck');
   const ship = () => {
-    if (document.querySelector('.truck-run')) return;
-    const done = () => toast('> 배송 완료. 리드타임 0.8일 단축 ✓');
-    if (reduce) return done();
+    if (reduce || document.querySelector('.truck-run')) return;
     const run = truck.cloneNode(true); run.removeAttribute('id'); run.className = 'truck-run'; run.setAttribute('aria-hidden', 'true');
     document.body.append(run);
-    run.addEventListener('animationend', () => { run.remove(); done(); });
+    run.addEventListener('animationend', () => run.remove());
   };
   truck.addEventListener('click', ship);
   truck.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ship(); } });
-  // 4) 코나미 코드 (↑↑↓↓←→←→BA) → 배경 비가 잠시 택배 박스로
+  // 4) 코나미 코드 (↑↑↓↓←→←→BA) → 0/1 비가 화면 맨 위로 올라와 페이지 전체를 위에서 아래로 훑고 지나감
   const konami = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'keyb', 'keya']; // 한글 입력 상태에서도 동작하도록 물리 키(code) 기준
   let kpos = 0;
   document.addEventListener('keydown', e => {
     const k = e.code.toLowerCase();
     kpos = k === konami[kpos] ? kpos + 1 : (k === konami[0] ? 1 : 0);
-    if (kpos < konami.length) return;
+    if (kpos < konami.length || reduce || c.classList.contains('front')) return;
     kpos = 0;
-    glyph = () => '▣';
-    toast('> 입고 폭주! 박스 ' + (1000 + Math.random() * 9000 | 0) + '개 적치 중…', 4000);
-    setTimeout(() => glyph = () => (Math.random() < .5 ? '0' : '1'), 6000);
+    drops = drops.map(() => Math.random() * -12);   // 모든 줄을 화면 맨 위에서 다시 출발
+    c.classList.add('front');
+    setTimeout(() => c.classList.remove('front'), 4500);
   });
 
   // 숫자 카운트업
