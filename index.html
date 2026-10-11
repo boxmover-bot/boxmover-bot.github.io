@@ -52,7 +52,7 @@
 
   nav { position: sticky; top: 0; z-index: 4; background: rgba(5, 8, 6, .85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
   nav .in { max-width: 1240px; margin: 0 auto; padding: 15px 24px; display: flex; align-items: center; gap: 8px 31px; flex-wrap: wrap; font: 15.4px var(--mono); }
-  nav .logo { color: var(--green); font-weight: 700; margin-right: auto; text-decoration: none; }
+  nav .logo { color: var(--green); font-weight: 700; margin-right: auto; text-decoration: none; transition: font-size .2s ease; }
   nav a { color: var(--sub); text-decoration: none; }
   nav a span { color: var(--amber); margin-right: 4px; }
   nav a:hover, nav a:focus-visible { color: #fff; }
@@ -209,6 +209,10 @@
   footer pre:hover, footer pre:focus-visible { opacity: 1; }
   /* 이스터에그: 트럭 배송 */
   .truck-run { position: fixed; left: 0; bottom: 18px; z-index: 20; margin: 0; font: 12px/1.25 var(--mono); color: var(--green); pointer-events: none; animation: drive 2.6s cubic-bezier(.5, 0, .7, 1) forwards; }
+  /* 이스터에그: 릭롤 팝업 */
+  .rick { width: min(720px, calc(100% - 32px)); margin: auto; padding: 0; background: #0e1210; border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; color: var(--text); }
+  .rick::backdrop { background: rgba(0, 0, 0, .8); }
+  .rick iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; background: #000; }
   @keyframes drive { from { transform: translateX(-320px); } to { transform: translateX(calc(100vw + 40px)); } }
 
   /* 프로필 사진: 21프레임 스프라이트(졸라 → E3 → 원본 단순 혼합), 마우스 올리면 재생·떼면 역재생 */
@@ -613,6 +617,11 @@
     </div>
   </section>
 
+  <dialog class="rick" id="rick" aria-label="Never Gonna Give You Up">
+    <div class="term-bar"><i></i><i></i><i></i><span>never_gonna_give_you_up.mp4</span><button class="cs-close" type="button" aria-label="닫기">esc ✕</button></div>
+    <iframe title="Rick Astley - Never Gonna Give You Up" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+  </dialog>
+
   <footer>
     <pre id="truck" role="button" tabindex="0" aria-label="트럭 출발시키기" title="출발!"> _____     ____________________
 |     |   |                    |___\_
@@ -731,6 +740,23 @@
   };
   truck.addEventListener('click', ship);
   truck.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ship(); } });
+  // 2) ~/seunghwan 을 누를 때마다 글씨가 1pt씩 커지고, 5번째에 릭롤 (4초 동안 안 누르면 원래대로)
+  const logo = document.querySelector('nav .logo'), rick = document.getElementById('rick'), rickFrame = rick.querySelector('iframe');
+  let taps = 0, tapTimer;
+  const resetLogo = () => { taps = 0; logo.style.fontSize = ''; };
+  logo.addEventListener('click', () => {
+    clearTimeout(tapTimer);
+    taps++;
+    if (taps < 5) { logo.style.fontSize = `calc(1em + ${taps}pt)`; tapTimer = setTimeout(resetLogo, 4000); return; }
+    resetLogo();
+    rickFrame.src = 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&playsinline=1';
+    rick.showModal();
+  });
+  const stopRick = () => { rickFrame.src = 'about:blank'; };
+  const closeRick = () => { rick.close(); stopRick(); };
+  rick.querySelector('.cs-close').addEventListener('click', closeRick);
+  rick.addEventListener('click', e => { if (e.target === rick) closeRick(); });
+  rick.addEventListener('close', stopRick);   // Esc로 닫아도 재생 중지
   // 4) 코나미 코드 (↑↑↓↓←→←→BA) → 0/1 비가 화면 맨 위로 올라와 페이지 전체를 위에서 아래로 훑고 지나감
   const konami = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'keyb', 'keya']; // 한글 입력 상태에서도 동작하도록 물리 키(code) 기준
   let kpos = 0;
