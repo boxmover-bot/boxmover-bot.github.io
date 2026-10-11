@@ -209,12 +209,10 @@
   footer pre { font: 10px/1.25 var(--mono); color: var(--green); opacity: .7; cursor: pointer; transition: opacity .2s; }
   footer pre:hover, footer pre:focus-visible { opacity: 1; }
   /* 이스터에그: 트럭 배송 */
-  .truck-run { position: fixed; left: 0; bottom: 18px; z-index: 20; margin: 0; font: 12px/1.25 var(--mono); color: var(--green); pointer-events: none; animation: drive 2.6s cubic-bezier(.5, 0, .7, 1) forwards; }
   /* 이스터에그: 릭롤 팝업 */
   .rick { width: min(720px, calc(100% - 32px)); margin: auto; padding: 0; background: #0e1210; border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; color: var(--text); }
   .rick::backdrop { background: rgba(0, 0, 0, .8); }
   .rick iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; background: #000; }
-  @keyframes drive { from { transform: translateX(-320px); } to { transform: translateX(calc(100vw + 40px)); } }
 
   /* 프로필 사진: 21프레임 스프라이트(졸라 → E3 → 원본 단순 혼합), 마우스 올리면 재생·떼면 역재생 */
   .who { display: flex; align-items: center; gap: 28px; }
@@ -627,11 +625,11 @@
   </dialog>
 
   <footer>
-    <pre id="truck" role="button" tabindex="0" aria-label="트럭 출발시키기" title="출발!"> _____     ____________________
-|     |   |                    |___\_
-| SKU |   |                    |_____|_
-|_____|   |____________________|_______|
-           (o)  (o)        (o)    (o) </pre>
+    <pre id="truck" role="button" tabindex="0" aria-label="트럭 출발시키기" title="출발!"> ____________________
+|                    |___\_
+|                    |_____|_
+|____________________|_______|
+ (o)  (o)        (o)    (o) </pre>
     <span>© 2026 Kim Seung Hwan — all systems operational</span>
   </footer>
 </main>
@@ -738,19 +736,22 @@
     const k = e.key.toLowerCase(), mod = e.ctrlKey || e.metaKey;
     if (e.key === 'F12' || (mod && ['s', 'u', 'p'].includes(k)) || (mod && e.shiftKey && ['i', 'j', 'c'].includes(k))) e.preventDefault();
   });
-  // 캡처 억제: PrintScreen 키나 창이 포커스를 잃으면(캡처 도구 실행 시) 잠시 화면을 흐리게
+  // 캡처 억제: PrintScreen 키를 누르면 잠시 화면을 흐리게
   const shield = on => document.body.classList.toggle('shield', on);
   document.addEventListener('keyup', e => { if (e.key === 'PrintScreen') { try { navigator.clipboard.writeText(''); } catch (_) {} shield(true); setTimeout(() => shield(false), 1500); } });
-  addEventListener('blur', () => shield(true));
-  addEventListener('focus', () => shield(false));
   // ===== 이스터에그 =====
   // 1) 푸터 트럭 클릭 → 화면을 가로질러 배송
   const truck = document.getElementById('truck');
-  const ship = () => {
-    if (reduce || document.querySelector('.truck-run')) return;
-    const run = truck.cloneNode(true); run.removeAttribute('id'); run.className = 'truck-run'; run.setAttribute('aria-hidden', 'true');
-    document.body.append(run);
-    run.addEventListener('animationend', () => run.remove());
+  let shipping = false;
+  const ship = async () => {   // 클릭한 트럭이 오른쪽으로 출발 → 화면 밖으로 → 왼쪽에서 다시 들어와 제자리
+    if (reduce || shipping) return;
+    shipping = true;
+    const go = truck.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(100vw)' }], { duration: 1600, easing: 'cubic-bezier(.55, 0, .9, .4)', fill: 'forwards' });
+    await go.finished;
+    const back = truck.animate([{ transform: 'translateX(-100vw)' }, { transform: 'translateX(0)' }], { duration: 1200, easing: 'cubic-bezier(.1, .6, .3, 1)' });
+    go.cancel();
+    await back.finished;
+    shipping = false;
   };
   truck.addEventListener('click', ship);
   truck.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ship(); } });
