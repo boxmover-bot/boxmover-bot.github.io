@@ -83,7 +83,6 @@
   .c-cyan { --ac: var(--cyan); }
   .c-purple { --ac: var(--purple); }
   .c-amber { --ac: var(--amber); }
-  .c-gray { --ac: #9aa5a0; }
 
   .chips { display: flex; flex-wrap: wrap; gap: 6px; }
   .chips span { font: 12px var(--mono); color: var(--ac, var(--green)); border: 1px solid color-mix(in srgb, var(--ac, var(--green)) 45%, transparent); background: color-mix(in srgb, var(--ac, var(--green)) 8%, transparent); padding: 2px 8px; border-radius: 4px; }
@@ -111,7 +110,6 @@
   .timeline::before { content: ""; position: absolute; left: 10%; right: 10%; top: 10px; height: 1px; background: var(--line-strong); }
   .era { display: flex; flex-direction: column; gap: 12px; position: relative; }
   .era .dot { width: 21px; height: 21px; border-radius: 50%; border: 2px solid var(--ac); background: var(--bg); margin: 0 auto 8px; position: relative; }
-  .era.now .dot::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--ac); }
   .era-card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 22px 20px; min-height: 236px; display: flex; flex-direction: column; gap: 4px; }
   .era-year { font: 700 14px var(--mono); color: var(--ac); }
   .era-card h3 { font: 700 18px/1.4 var(--sans); color: #fff; margin-top: 4px; }
@@ -208,7 +206,6 @@
   footer { display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 48px; font: 12px var(--mono); color: var(--muted); }
   footer pre { font: 10px/1.25 var(--mono); color: var(--green); opacity: .7; cursor: pointer; transition: opacity .2s; }
   footer pre:hover, footer pre:focus-visible { opacity: 1; }
-  /* 이스터에그: 트럭 배송 */
   /* 이스터에그: 릭롤 팝업 */
   .rick { width: min(720px, calc(100% - 32px)); margin: auto; padding: 0; background: #0e1210; border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; color: var(--text); }
   .rick::backdrop { background: rgba(0, 0, 0, .8); }
@@ -714,9 +711,8 @@
   }), { rootMargin: '-40% 0px -55% 0px' });
   navLinks.forEach(a => spy.observe(document.querySelector(a.hash)));
 
-  // 프로필 사진: 터치 기기는 탭으로 전환
-  document.querySelectorAll(".morph").forEach(m => m.addEventListener("click", () => m.classList.toggle("on")));
-
+  // 프로필 사진: 터치 기기는 탭으로 전환 (마우스는 hover로 충분하므로 클릭 무시 → 클릭 후 원본에 멈춰 있는 문제 방지)
+  document.querySelectorAll(".morph").forEach(m => m.addEventListener("click", e => { if (e.pointerType !== "mouse") m.classList.toggle("on"); }));
 
   // ===== 보호 기능 (완벽한 차단은 불가능, 일반 방문자의 손쉬운 복사·저장을 막는 수준) =====
   // 이메일: HTML에 주소를 그대로 두지 않아 단순 수집 봇이 못 읽게 함
@@ -738,9 +734,9 @@
   });
   // 캡처 억제: PrintScreen 키를 누르면 잠시 화면을 흐리게
   const shield = on => document.body.classList.toggle('shield', on);
-  document.addEventListener('keyup', e => { if (e.key === 'PrintScreen') { try { navigator.clipboard.writeText(''); } catch (_) {} shield(true); setTimeout(() => shield(false), 1500); } });
+  document.addEventListener('keyup', e => { if (e.key === 'PrintScreen') { navigator.clipboard?.writeText('').catch(() => {}); shield(true); setTimeout(() => shield(false), 1500); } });
   // ===== 이스터에그 =====
-  // 1) 푸터 트럭 클릭 → 화면을 가로질러 배송
+  // 1) 푸터 트럭 클릭 → 그 트럭이 오른쪽으로 출발했다가 왼쪽에서 돌아옴
   const truck = document.getElementById('truck');
   let shipping = false;
   const ship = async () => {   // 클릭한 트럭이 오른쪽으로 출발 → 화면 밖으로 → 왼쪽에서 다시 들어와 제자리
