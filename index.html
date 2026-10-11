@@ -204,7 +204,13 @@
   .mail:hover, .mail:focus-visible { text-decoration: underline; }
 
   footer { display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; gap: 8px 20px; margin-top: 48px; font: 12px var(--mono); color: var(--muted); }
-  footer pre { font: 10px/1.25 var(--mono); color: var(--green); opacity: .7; }
+  footer pre { font: 10px/1.25 var(--mono); color: var(--green); opacity: .7; cursor: pointer; transition: opacity .2s; }
+  footer pre:hover, footer pre:focus-visible { opacity: 1; }
+  /* 이스터에그: 트럭 배송 */
+  .truck-run { position: fixed; left: 0; bottom: 18px; z-index: 20; margin: 0; font: 12px/1.25 var(--mono); color: var(--green); pointer-events: none; animation: drive 2.6s cubic-bezier(.5, 0, .7, 1) forwards; }
+  @keyframes drive { from { transform: translateX(-320px); } to { transform: translateX(calc(100vw + 40px)); } }
+  .toast { position: fixed; left: 50%; bottom: 28px; z-index: 21; transform: translate(-50%, 12px); opacity: 0; background: #000; border: 1px solid var(--green); color: var(--green); font: 14px var(--mono); padding: 10px 16px; border-radius: 6px; transition: opacity .3s, transform .3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   /* 프로필 사진: 21프레임 스프라이트(졸라 → E3 → 원본 단순 혼합), 마우스 올리면 재생·떼면 역재생 */
   .who { display: flex; align-items: center; gap: 28px; }
@@ -609,7 +615,7 @@
   </section>
 
   <footer>
-    <pre aria-hidden="true"> _____     ____________________
+    <pre id="truck" role="button" tabindex="0" aria-label="트럭 출발시키기" title="출발!"> _____     ____________________
 |     |   |                    |___\_
 | SKU |   |                    |_____|_
 |_____|   |____________________|_______|
@@ -632,6 +638,7 @@
   }
 
   // 매트릭스 레인 (0과 1)
+  let glyph = () => (Math.random() < .5 ? '0' : '1');
   const c = document.getElementById('rain'), ctx = c.getContext('2d');
   const size = 16;
   let drops = [];
@@ -645,7 +652,7 @@
     ctx.font = size + 'px monospace';
     drops.forEach((y, i) => {
       ctx.fillStyle = Math.random() > .975 ? '#d8ffe6' : '#3ddc84';
-      ctx.fillText(Math.random() < .5 ? '0' : '1', i * size, y * size);
+      ctx.fillText(glyph(), i * size, y * size);
       drops[i] = y * size > c.height && Math.random() > .975 ? 0 : y + 1;
     });
   }
@@ -713,6 +720,38 @@
   document.addEventListener('keyup', e => { if (e.key === 'PrintScreen') { try { navigator.clipboard.writeText(''); } catch (_) {} shield(true); setTimeout(() => shield(false), 1500); } });
   addEventListener('blur', () => shield(true));
   addEventListener('focus', () => shield(false));
+  // ===== 이스터에그 =====
+  const toast = (msg, ms = 2600) => {
+    let t = document.querySelector('.toast');
+    if (!t) { t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); document.body.append(t); }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms);
+  };
+  // 1) 푸터 트럭 클릭 → 화면을 가로질러 배송
+  const truck = document.getElementById('truck');
+  const ship = () => {
+    if (document.querySelector('.truck-run')) return;
+    const done = () => toast('> 배송 완료. 리드타임 0.8일 단축 ✓');
+    if (reduce) return done();
+    const run = truck.cloneNode(true); run.removeAttribute('id'); run.className = 'truck-run'; run.setAttribute('aria-hidden', 'true');
+    document.body.append(run);
+    run.addEventListener('animationend', () => { run.remove(); done(); });
+  };
+  truck.addEventListener('click', ship);
+  truck.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ship(); } });
+  // 4) 코나미 코드 (↑↑↓↓←→←→BA) → 배경 비가 잠시 택배 박스로
+  const konami = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'keyb', 'keya']; // 한글 입력 상태에서도 동작하도록 물리 키(code) 기준
+  let kpos = 0;
+  document.addEventListener('keydown', e => {
+    const k = e.code.toLowerCase();
+    kpos = k === konami[kpos] ? kpos + 1 : (k === konami[0] ? 1 : 0);
+    if (kpos < konami.length) return;
+    kpos = 0;
+    glyph = () => '▣';
+    toast('> 입고 폭주! 박스 ' + (1000 + Math.random() * 9000 | 0) + '개 적치 중…', 4000);
+    setTimeout(() => glyph = () => (Math.random() < .5 ? '0' : '1'), 6000);
+  });
+
   // 숫자 카운트업
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (!e.isIntersecting) return;
