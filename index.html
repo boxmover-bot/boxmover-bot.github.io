@@ -141,7 +141,7 @@
   .case-open:hover, .case-open:focus-visible { background: var(--ac); color: #000; }
 
   /* 사례 연구 상세 */
-  .cs { width: min(820px, calc(100% - 32px)); max-height: calc(100vh - 48px); margin: auto; padding: 0; background: #0e1210; color: var(--text); border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; }
+  .cs { width: min(820px, calc(100% - 32px)); max-height: calc(100vh - 48px); max-height: calc(100dvh - 48px); margin: auto; padding: 0; background: #0e1210; color: var(--text); border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; }
   .cs[open] { display: flex; flex-direction: column; }
   .cs::backdrop { background: rgba(0, 0, 0, .75); backdrop-filter: blur(3px); }
   .cs .term-bar { flex: none; }
@@ -200,7 +200,7 @@
   .list li small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 2px; }
   .list li span:last-child { font: 13px var(--mono); color: var(--cyan); text-align: right; }
 
-  .mail { font: 400 clamp(16px, 1.6vw, 19px) var(--mono); color: var(--green); background: none; border: 0; padding: 0; cursor: pointer; text-align: left; word-break: break-all; }
+  .mail { font: 400 clamp(16px, 1.6vw, 19px) var(--mono); color: var(--green); cursor: pointer; word-break: break-all; -webkit-user-select: text; user-select: text; }
   .mail:hover, .mail:focus-visible { text-decoration: underline; }
   .copied { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; vertical-align: middle; font: 500 13px var(--sans); color: var(--green); background: rgba(61, 220, 132, .1); border: 1px solid rgba(61, 220, 132, .35); padding: 3px 10px; border-radius: 999px; opacity: 0; transform: translateX(-6px) scale(.9); transition: opacity .2s, transform .2s; pointer-events: none; }
   .copied.show { opacity: 1; transform: none; }
@@ -229,6 +229,8 @@
     main { padding: 0 16px 80px; }
     nav .in { padding: 12px 16px; gap: 18px; font-size: 14.3px; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }   /* 메뉴를 한 줄 가로 스크롤로 */
     nav .in::-webkit-scrollbar { display: none; }
+    nav .in { padding-right: 56px; -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent); }   /* 오른쪽 끝을 흐리게 → 메뉴가 더 있다는 표시 */
+    h1 small { font-size: 12px; letter-spacing: .04em; white-space: nowrap; }   /* 영문 이름 한 줄 유지 */
     nav .logo { margin-right: 4px; }
     .list li { flex-direction: column; gap: 2px; }
     .list li span:last-child { text-align: left; }
@@ -286,7 +288,7 @@
           <button type="button" data-bio="long" aria-pressed="false">--verbose</button>
         </div>
         <p class="intro" data-bio-text="short">물류를 직접 운영하고, 데이터로 문제를 찾아 개선합니다.</p>
-        <p class="intro" data-bio-text="long" hidden>데이터로 움직이는 물류 프로세스를 만듭니다. 현장의 문제를 숫자로 정의하고, 반복되는 수작업은 시스템으로 바꾸고, 국경을 넘는 물류까지 하나의 흐름으로 잇습니다.<br><br>크로스보더 물류의 배송비와 리드타임 구조를 개선했고, 연 8천억원 규모 상품의 재고 배분을 수요예측 기반으로 운영했습니다. 시스템 도입부터 수기 업무 전환까지, MD·개발 조직과 함께 실행해 왔습니다.</p>
+        <p class="intro" data-bio-text="long" hidden>데이터로 움직이는 물류 프로세스를 만듭니다. 현장의 문제를 숫자로 정의하고, 반복되는 수작업은 시스템으로 바꾸고, 국경을 넘는 물류까지 하나의 흐름으로 잇습니다.<br><br>크로스보더 물류의 배송비와 리드타임 구조를 개선했고, 연 약 8천억원 규모 상품의 재고 배분을 수요예측 기반으로 운영했습니다. 시스템 도입부터 수기 업무 전환까지, MD·개발 조직과 함께 실행해 왔습니다.</p>
         <div class="btns">
           <a class="btn" href="#traceback">./traceback --start</a>
           <a class="btn" href="#contact">contact --me</a>
@@ -300,7 +302,7 @@
         <div class="stats">
           <div class="stat"><b data-count="6" data-suffix="년">0</b><span>물류·SCM 경력<br>(총 경력 9년)</span></div>
           <div class="stat"><b data-count="3" data-suffix="개">0</b><span>ERP·OMS·WMS<br>시스템 도입·기획 경험</span></div>
-          <div class="stat"><b data-count="30" data-suffix="%">0</b><span>폐기율 감소<br>(전년 대비)</span></div>
+          <div class="stat"><b data-count="30" data-prefix="약 " data-suffix="%">0</b><span>폐기율 감소 기여<br>(전년 대비)</span></div>
           <div class="stat"><b data-count="8" data-suffix="개국">0</b><span>12개 채널<br>크로스보더 운영</span></div>
         </div>
       </div>
@@ -345,7 +347,7 @@
           <div class="dot"></div>
           <div class="era-card">
             <div class="era-year">2019 – 2022</div>
-            <h3>하루 2만 개가 나가는 현장</h3>
+            <h3>하루 최대 2만 개가 나가는 현장</h3>
             <div class="where">브랜디 · 아비드이앤에프 — SCM</div>
             <p>현장의 문제를 데이터로 정의하고 프로세스로 푸는 법을 배웠습니다.</p>
           </div>
@@ -364,7 +366,7 @@
           </div>
           <div class="sub"><b>다채널 통합 출고</b><span>Amazon · Shopee · Lazada · Qoo10 · Rakuten</span></div>
           <div class="sub"><b>ERP·OMS 도입</b><span>더존 iCUBE 연동 · 처리시간 −25%</span></div>
-          <div class="sub"><b>해외 거점 구축</b><span>FBA·SBS·홍콩 3PL · 물류비 −20%</span></div>
+          <div class="sub"><b>해외 거점 구축</b><span>FBA·SBS·홍콩 3PL · 물류비 약 −20%</span></div>
         </div>
 
         <div class="era">
@@ -373,10 +375,10 @@
             <div class="era-year">2024 – 2026</div>
             <h3>예측으로 재고를 움직이다</h3>
             <div class="where">우아한형제들 — SCM · B마트</div>
-            <p>연 8천억원 규모 상품을 수요예측과 PLC 등급으로 배분했습니다.</p>
+            <p>연 약 8천억원 규모 상품을 수요예측과 PLC 등급으로 배분했습니다.</p>
           </div>
           <div class="sub"><b>재고 이관 운영</b><span>수요예측·안전재고 기반 산정</span></div>
-          <div class="sub"><b>폐기 예측 리포트</b><span>폐기율 전년 대비 −30%</span></div>
+          <div class="sub"><b>폐기 예측 리포트</b><span>폐기율 약 30% 감소 기여 (전년 대비)</span></div>
           <div class="sub"><b>이관 산출 자동화</b><span>정확도 95%+ · 5시간 → 1회 배치</span></div>
         </div>
       </div>
@@ -421,7 +423,7 @@
         <article class="case c-purple">
           <span class="tag">#forecast · 2025</span>
           <h3>버려질 재고를 미리 본다</h3>
-          <div class="delta">폐기율 −30%</div>
+          <div class="delta">폐기율 약 −30%</div>
           <p>전 거점 재고·유통기한·수요예측을 결합한 일일 폐기 예측 리포트를 운영하며, MD와 할인·노출 강화로 소진을 앞당겼습니다.</p>
           <div class="chips"><span>리포팅</span><span>MD 협업</span></div>
           <button class="case-open" type="button" data-open="cs-waste">case_study --open →</button>
@@ -493,7 +495,7 @@
         <li><b>반복 구간 자동화</b>매일 손으로 하던 구간은 수식으로 바꿨습니다.</li>
       </ol>
       <h3>The Outcome</h3>
-      <div class="cs-result"><div><b>−30%</b><span>폐기율 (전년 동기 대비) 감소에 기여</span></div><div><b>Daily</b><span>사후 집계에서 매일 예측으로</span></div></div>
+      <div class="cs-result"><div><b>약 −30%</b><span>폐기율 (전년 동기 대비) 감소에 기여</span></div><div><b>Daily</b><span>사후 집계에서 매일 예측으로</span></div></div>
     </div>
   </dialog>
 
@@ -517,7 +519,7 @@
         <li><b>해외 거점 구축</b>아마존 FBA, 싱가포르·말레이시아 쇼피 SBS, 홍콩 3PL을 계약하고 재고이전을 관리했습니다.</li>
       </ol>
       <h3>The Outcome</h3>
-      <div class="cs-result"><div><b>−25%</b><span>업무 처리 시간</span></div><div><b>−20%</b><span>물류비</span></div><div><b>−0.8일</b><span>리드타임</span></div></div>
+      <div class="cs-result"><div><b>−25%</b><span>업무 처리 시간</span></div><div><b>약 −20%</b><span>물류비</span></div><div><b>−0.8일</b><span>리드타임</span></div></div>
     </div>
   </dialog>
 
@@ -612,7 +614,7 @@
     <div class="term-bar"><i></i><i></i><i></i><span>contact</span></div>
     <div class="term-body">
       <p class="prompt"><b>$</b> echo $EMAIL</p>
-      <button class="mail" type="button" data-u="akakm1174" data-d="gmail.com" title="클릭하면 복사됩니다">[이메일 불러오는 중]</button><span class="copied" role="status" aria-live="polite">✓ 클립보드에 복사됨</span>
+      <span class="mail" role="button" tabindex="0" data-u="akakm1174" data-d="gmail.com" title="클릭하면 복사됩니다">[이메일 불러오는 중]</span><span class="copied" role="status" aria-live="polite">✓ 클립보드에 복사됨</span>
     </div>
   </section>
 
@@ -734,16 +736,31 @@
   // ===== 보호 기능 (완벽한 차단은 불가능, 일반 방문자의 손쉬운 복사·저장을 막는 수준) =====
   // 이메일: HTML에 주소를 그대로 두지 않아 단순 수집 봇이 못 읽게 함
   // 누르면 클립보드에 복사, 이메일 옆에 '복사됨' 배지를 잠깐 띄움
+  // 카카오톡 등 앱 내장 브라우저는 클립보드 API가 막혀 있을 수 있어 예전 방식(execCommand)으로 한 번 더 시도하고,
+  // 그래도 안 되면 주소를 선택해 두고 '길게 눌러 복사' 안내 (이메일 글자만은 선택 가능하게 열어 둠)
+  const copyText = async text => {
+    try { await navigator.clipboard.writeText(text); return true; } catch (_) {}
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;user-select:text;-webkit-user-select:text';
+      document.body.append(ta); ta.select(); ta.setSelectionRange(0, text.length);
+      const ok = document.execCommand('copy'); ta.remove(); return ok;
+    } catch (_) { return false; }
+  };
   document.querySelectorAll('.mail[data-u]').forEach(a => {
     const e = a.dataset.u + '@' + a.dataset.d, badge = a.nextElementSibling;
     a.textContent = e;
-    a.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(e); } catch (_) { return; }
-      badge.classList.add('show'); clearTimeout(a._t); a._t = setTimeout(() => badge.classList.remove('show'), 1800);
-    });
+    const copy = async () => {
+      const ok = await copyText(e);
+      if (!ok) { const r = document.createRange(); r.selectNodeContents(a); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+      badge.textContent = ok ? '✓ 클립보드에 복사됨' : '길게 눌러 복사하세요';
+      badge.classList.add('show'); clearTimeout(a._t); a._t = setTimeout(() => badge.classList.remove('show'), ok ? 1800 : 3500);
+    };
+    a.addEventListener('click', copy);
+    a.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); copy(); } });
   });
-  // 오른쪽 마우스, 드래그 금지
-  document.addEventListener('contextmenu', e => e.preventDefault());
+  // 오른쪽 마우스, 드래그 금지 (이메일 위에서는 길게 누르기 메뉴 허용)
+  document.addEventListener('contextmenu', e => { if (!e.target.closest('.mail')) e.preventDefault(); });
   document.addEventListener('dragstart', e => e.preventDefault());
   // 저장·소스보기·인쇄·개발자도구 단축키 막기
   document.addEventListener('keydown', e => {
@@ -803,10 +820,10 @@
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (!e.isIntersecting) return;
     io.unobserve(e.target);
-    const b = e.target, end = +b.dataset.count, suf = b.dataset.suffix || '';
-    if (reduce) return b.textContent = end + suf;
+    const b = e.target, end = +b.dataset.count, pre = b.dataset.prefix || '', suf = b.dataset.suffix || '';
+    if (reduce) return b.textContent = pre + end + suf;
     let n = 0;
-    const t = setInterval(() => { n++; b.textContent = Math.round(end * n / 30) + suf; if (n >= 30) clearInterval(t); }, 25);
+    const t = setInterval(() => { n++; b.textContent = pre + Math.round(end * n / 30) + suf; if (n >= 30) clearInterval(t); }, 25);
   }));
   document.querySelectorAll('[data-count]').forEach(b => io.observe(b));
 </script>
